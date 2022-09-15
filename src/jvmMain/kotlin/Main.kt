@@ -7,22 +7,37 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.google.common.io.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import org.openqa.selenium.chrome.ChromeDriver
+
 import utils.Scheduler
+import webscrapper.Webscrapper
 
 
 class Main {
+    object Statuses {
+        const val incorrectCreds = "Password or Email is incorrect"
+        const val isLoadingService = "Spinning up chrome background service"
+        const val scheduling = "Scheduling tasks"
+        const val cancelled = "Task was cancelled"
+        const val loggingIn = "Logging in at -time-"
+        const val incorrectDate = "Incorrect time format must be 24 time format"
+        const val loggedIn = "Logged in at -time-"
+    }
+
     companion object {
+        private lateinit var driver: ChromeDriver
         private val mainCoroutine = CoroutineScope(Job())
         private fun getIntervalTime(interval: Long): String {
             val hours = interval / 3600
@@ -31,15 +46,17 @@ class Main {
             return "${hours}:${minutes}:${seconds}"
         }
 
+        @Preview
         @Composable
         fun app() {
-            val currentTime = DateTime.now().plusHours(1).toString("hh:mm:ss")
+            val currentTime = DateTime.now().plusMinutes(2).toString("HH:mm:ss")
             var email by remember { mutableStateOf("") }
             var password by remember { mutableStateOf("") }
             var loginTime by remember { mutableStateOf(currentTime) }
-            var intervalTime by remember { mutableStateOf<Long>(0L) }
+            var intervalTime by remember { mutableStateOf(0L) }
             var isLoading by remember { mutableStateOf(false) }
-            var isError by remember { mutableStateOf(false) }
+            var status by remember { mutableStateOf("") }
+            var statusColor by remember { mutableStateOf(Color.White) }
 
             MaterialTheme {
                 Row(
@@ -49,9 +66,9 @@ class Main {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Column(
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth().fillMaxHeight(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(70.dp)
+                        verticalArrangement = Arrangement.spacedBy(50.dp)
                     ) {
                         Row {
                             Row(
@@ -98,7 +115,15 @@ class Main {
                                             text = "Enter Login Time"
                                         )
                                     }
-
+                                }
+                                if (status.isNotBlank()) {
+                                    Row {
+                                        Text(
+                                            fontSize = 15.sp,
+                                            color = statusColor,
+                                            text = status
+                                        )
+                                    }
                                 }
                                 Row {
                                     Column(
@@ -115,8 +140,6 @@ class Main {
                                                     unfocusedBorderColor = Color.White,
                                                     placeholderColor = Color.White,
                                                     unfocusedLabelColor = Color.White
-
-
                                                 ),
                                                 value = email,
                                                 onValueChange = { email = it },
@@ -132,8 +155,6 @@ class Main {
                                                     unfocusedBorderColor = Color.White,
                                                     placeholderColor = Color.White,
                                                     unfocusedLabelColor = Color.White
-
-
                                                 ),
                                                 value = password,
                                                 onValueChange = { password = it },
@@ -158,8 +179,7 @@ class Main {
                                                 onValueChange = {
                                                     loginTime = it
                                                 },
-                                                isError = isError,
-                                                label = { Text("Login Time (H:M:S)") }
+                                                label = { Text("Login Time (HH:MM:SS)") }
                                             )
 
                                         }
@@ -176,7 +196,18 @@ class Main {
                                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                                 ) {
                                     Button(
-                                        onClick = { intervalTime = 0 },
+                                        onClick = {
+                                            mainCoroutine.launch {
+                                                driver.close()
+                                                intervalTime = 0
+                                                statusColor = Color.White
+                                                status = Statuses.cancelled
+                                                delay(2000L)
+                                                status = ""
+                                                return@launch
+                                            }
+
+                                        },
                                         enabled = intervalTime != 0L
                                     ) {
                                         Text("Cancel")
@@ -184,15 +215,42 @@ class Main {
                                     Button(
                                         enabled = !isLoading && intervalTime == 0L,
                                         onClick = {
+                                            statusColor = Color.White
+                                            status = ""
                                             isLoading = true
                                             mainCoroutine.launch {
-                                                val privateTimer = Scheduler(email, password).start(loginTime)
-                                                isLoading = false
-                                                if (privateTimer != null) {
-                                                    intervalTime = privateTimer.interval
+                                                val datimeCompare =
+                                                    DateTimeFormat.forPattern("HH:mm:ss").parseLocalTime(loginTime)
+                                                        .toDateTimeToday().toInstant().millis
+                                                if (datimeCompare <= DateTime.now().toInstant().millis) {
+                                                    statusColor = Color.Red
+                                                    status = Statuses.incorrectDate
+                                                    delay(2000L)
+                                                    isLoading = false
+                                                    return@launch
                                                 }
-                                                var previous = System.currentTimeMillis()
+                                                try {
+                                                    if (!Webscrapper(email, password).login()) {
+                                                        status = Statuses.incorrectCreds
+                                                        statusColor = Color.Red
+                                                        isLoading = false
+                                                        return@launch
+                                                    }
+                                                } catch (e: Throwable) {
+                                                    isLoading = false
+                                                    status = "Unknown Error Occurred"
+                                                    statusColor = Color.Red
+                                                    e.printStackTrace()
+                                                    return@launch
+                                                }
+                                                status = Statuses.isLoadingService
+                                                val privateTimer = Scheduler(email, password).start(loginTime)
+                                                driver = privateTimer.driver
+                                                isLoading = false
+                                                status = Statuses.scheduling
+                                                intervalTime = privateTimer.interval
 
+                                                var previous = System.currentTimeMillis()
 
                                                 mainCoroutine.launch {
                                                     while (intervalTime > 0) {
@@ -201,10 +259,10 @@ class Main {
                                                         previous = System.currentTimeMillis()
                                                     }
                                                     intervalTime = 0
-                                                    if (intervalTime == 0L) {
-                                                        privateTimer?.timer?.cancel()
-                                                    }
+                                                    privateTimer.timer.cancel()
+                                                    status = Statuses.loggedIn.replace("-time-", loginTime)
                                                 }
+                                                status = Statuses.loggingIn.replace("-time-", loginTime)
                                             }
 
                                         }
@@ -225,6 +283,11 @@ class Main {
 
         @JvmStatic
         fun main(args: Array<String>) = application {
+            println()
+            System.setProperty(
+                "webdriver.chrome.driver",
+                "/opt/homebrew/Caskroom/chromedriver/105.0.5195.52/chromedriver"
+            )
             val title by remember { mutableStateOf("Salarium Scheduler V2") }
             Window(
                 title = title,

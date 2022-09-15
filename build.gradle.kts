@@ -26,7 +26,7 @@ compose.desktop {
                 packageName = "Salarium Scheduler V2"
                 version = "v0.7"
                 description = "Application to automatically log into salarium"
-                copyright = "© 2020 Roman Augusto. All rights reserved."
+                copyright = "© 2022 Roman Augusto. All rights reserved."
                 iconFile.set(project.file("src/jvmMain/resources/drawable/icon.icns"))
                 jvmArgs("-Dapple.awt.application.appearance=system")
 
@@ -37,11 +37,12 @@ compose.desktop {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "1.8"
         }
-        withJava()
+
     }
-    sourceSets {
+
+    kotlin.sourceSets {
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -49,6 +50,11 @@ kotlin {
                 implementation("org.seleniumhq.selenium:selenium-java:4.4.0")
                 implementation("org.json:json:20220320")
 
+            }
+
+            resources.srcDirs("/src/jvmMain/resources/driver/chromedriver")
+            resources.filter {
+                it.exists()
             }
         }
         val jvmTest by getting
