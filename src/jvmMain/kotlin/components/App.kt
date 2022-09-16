@@ -1,4 +1,4 @@
-package tk.romanaugsto.salariumauto.components
+package components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
-import tk.romanaugsto.salariumauto.Main
-import tk.romanaugsto.salariumauto.components.App.Statuses.getIntervalTime
+import components.App.Statuses.getIntervalTime
+import tk.romanaugusto.Main
 import utils.Scheduler
 import webscrapper.Webscrapper
 

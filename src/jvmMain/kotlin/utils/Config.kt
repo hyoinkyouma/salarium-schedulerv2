@@ -6,8 +6,8 @@ import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Dialog
 import com.google.common.io.Resources
 import org.json.JSONObject
-import tk.romanaugsto.salariumauto.Main
-import tk.romanaugsto.salariumauto.components.Dialogue
+import components.Dialogue
+import tk.romanaugusto.Main
 import java.io.File
 import java.nio.charset.StandardCharsets
 

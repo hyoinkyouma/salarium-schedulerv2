@@ -1,4 +1,4 @@
-package tk.romanaugsto.salariumauto.components
+package components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button

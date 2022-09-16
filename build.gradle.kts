@@ -18,6 +18,7 @@ repositories {
 }
 
 
+
 compose.desktop {
     application {
         nativeDistributions {
@@ -48,7 +49,7 @@ kotlin {
     jvm {
 
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "17"
         }
 
     }
@@ -62,7 +63,7 @@ kotlin {
                 implementation("org.json:json:20220320")
                 implementation("net.axay:simplekotlinmail-core:1.4.0")
                 implementation("net.axay:simplekotlinmail-client:1.4.0")
-                implementation("org.litote.kmongo:kmongo-coroutine:4.7.1")
+
 
             }
         }
@@ -76,7 +77,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "tk.romanaugsto.salariumauto.Main"
+        mainClass = "tk.romanaugusto.Main"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Salarium Scheduler V2"

@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.openqa.selenium.chrome.ChromeDriver
-import tk.romanaugsto.salariumauto.utils.Emailer
 import webscrapper.Webscrapper
 import java.util.*
 import kotlin.concurrent.schedule
@@ -33,8 +32,7 @@ class Scheduler(email: String, password: String) {
 
         val timer: TimerTask = Timer("Scheduled Login")
             .schedule(delay = interval * 1_000L) {
-                webscrapper.start()
-                schedulerCoroutine.launch {
+                webscrapper.start().run {
                     emailSender.send()
                 }
             }
