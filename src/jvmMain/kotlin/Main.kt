@@ -4,9 +4,15 @@ package tk.romanaugsto.salariumauto
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
@@ -14,8 +20,10 @@ import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
@@ -128,6 +136,7 @@ class Main {
             var isLoading by remember { mutableStateOf(false) }
             var status by remember { mutableStateOf("") }
             var statusColor by remember { mutableStateOf(Color.White) }
+            var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
 
             MaterialTheme {
@@ -216,7 +225,8 @@ class Main {
                                                 value = email,
                                                 onValueChange = { email = it },
                                                 enabled = !isLoading && intervalTime == 0L,
-                                                label = { Text("Email") }
+                                                label = { Text("Email") },
+                                                singleLine = true
 
                                             )
                                         }
@@ -231,10 +241,29 @@ class Main {
                                                 value = password,
                                                 onValueChange = { password = it },
                                                 enabled = !isLoading && intervalTime == 0L,
-                                                label = { Text("Password") }
+                                                label = { Text("Password") },
+                                                singleLine = true,
+                                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                                trailingIcon = {
+                                                    val image = if (passwordVisible) Icons.Filled.Info
+                                                    else Icons.Outlined.Info
 
+
+                                                    // Please provide localized description for accessibility services
+                                                    val description =
+                                                        if (passwordVisible) "Hide password" else "Show password"
+
+                                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                                        Icon(
+                                                            imageVector = image,
+                                                            contentDescription = description,
+                                                            tint = Color.White
+                                                        )
+                                                    }
+
+                                                }
                                             )
-
                                         }
 
                                         Row {
