@@ -5,20 +5,16 @@ package tk.romanaugsto.salariumauto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,13 +24,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
+import androidx.compose.ui.zIndex
 import com.google.common.io.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.openqa.selenium.chrome.ChromeDriver
 import utils.Config
 
@@ -63,7 +59,20 @@ class Main {
             val hours = interval / 3600
             val minutes = (interval % 3600L).floorDiv(60L)
             val seconds = interval % 60
-            return "${hours}:${minutes}:${seconds}"
+            val hoursDisplay = if (hours == 0L) {
+                ""
+            } else {
+                if (hours.toString().length == 2) "${hours}:" else "0$hours:"
+            }
+            val minuteDisplay = if (minutes == 0L && hours == 0L) {
+                ""
+            } else {
+                if (minutes.toString().length == 2) "${minutes}:" else "0$minutes:"
+            }
+
+            val secondsDisplay = if (seconds.toString().length == 2) seconds else "0$seconds"
+
+            return "${hoursDisplay}${minuteDisplay}${secondsDisplay}"
         }
 
         data class Settings(val driverLoc: String, var cachedEmail: String, var cachedPassword: String)
@@ -394,6 +403,23 @@ class Main {
                                 }
                             }
                         }
+                        Row(
+                            Modifier
+                                .height(80.dp)
+                                .background(color = Color(0x334155).copy(alpha = 1f))
+                                .fillMaxWidth().padding(horizontal = 15.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "© 2022 Roman Augusto",
+                                color = Color.White
+                            )
+                            Text(
+                                "Salarium Auto Scheduler V2",
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -471,7 +497,8 @@ class Main {
             val title by remember { mutableStateOf("Salarium Scheduler V2") }
             Window(
                 title = title,
-                onCloseRequest = ::exitApplication
+                onCloseRequest = ::exitApplication,
+                resizable = false
             ) {
                 app()
             }
