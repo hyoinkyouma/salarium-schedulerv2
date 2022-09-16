@@ -32,7 +32,7 @@ class Webscrapper(private val email: String, private val password: String) {
                 .implicitlyWait(Duration.ofSeconds(2))
             try {
                 login()
-                timeIn()
+                //    timeIn()
                 driver.close()
             } catch (e: Throwable) {
                 e.printStackTrace()

@@ -23,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import tk.romanaugsto.salariumauto.Main
+import tk.romanaugsto.salariumauto.components.App.Statuses.getIntervalTime
 import utils.Scheduler
 import webscrapper.Webscrapper
 
@@ -35,27 +36,28 @@ class App {
         const val loggingIn = "Logging in at -time-"
         const val incorrectDate = "Time format must be 24 time format and must be at a later time"
         const val loggedIn = "Logged in at -time-"
+
+        fun getIntervalTime(interval: Long): String {
+            val hours = interval / 3600
+            val minutes = (interval % 3600L).floorDiv(60L)
+            val seconds = interval % 60
+            val hoursDisplay = if (hours == 0L) {
+                ""
+            } else {
+                if (hours.toString().length == 2) "${hours}:" else "0$hours:"
+            }
+            val minuteDisplay = if (minutes == 0L && hours == 0L) {
+                ""
+            } else {
+                if (minutes.toString().length == 2) "${minutes}:" else "0$minutes:"
+            }
+
+            val secondsDisplay = if (seconds.toString().length == 2) seconds else "0$seconds"
+
+            return "${hoursDisplay}${minuteDisplay}${secondsDisplay}"
+        }
     }
 
-    private fun getIntervalTime(interval: Long): String {
-        val hours = interval / 3600
-        val minutes = (interval % 3600L).floorDiv(60L)
-        val seconds = interval % 60
-        val hoursDisplay = if (hours == 0L) {
-            ""
-        } else {
-            if (hours.toString().length == 2) "${hours}:" else "0$hours:"
-        }
-        val minuteDisplay = if (minutes == 0L && hours == 0L) {
-            ""
-        } else {
-            if (minutes.toString().length == 2) "${minutes}:" else "0$minutes:"
-        }
-
-        val secondsDisplay = if (seconds.toString().length == 2) seconds else "0$seconds"
-
-        return "${hoursDisplay}${minuteDisplay}${secondsDisplay}"
-    }
 
     @Composable
     fun mainWindow() {

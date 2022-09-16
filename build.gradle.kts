@@ -1,21 +1,23 @@
-import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.author
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.js.inline.clean.removeDuplicateImports
 
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+
 }
 
 group = "tk.roman.salariumautologin"
 version = "1.0-SNAPSHOT"
+
 
 repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
+
+
 compose.desktop {
     application {
         nativeDistributions {
@@ -58,12 +60,18 @@ kotlin {
                 implementation("org.jetbrains.exposed:exposed-jodatime:0.39.2")
                 implementation("org.seleniumhq.selenium:selenium-java:4.4.0")
                 implementation("org.json:json:20220320")
+                implementation("net.axay:simplekotlinmail-core:1.4.0")
+                implementation("net.axay:simplekotlinmail-client:1.4.0")
+                implementation("org.litote.kmongo:kmongo-coroutine:4.7.1")
 
             }
         }
         val jvmTest by getting
+
     }
 }
+
+
 
 
 compose.desktop {
