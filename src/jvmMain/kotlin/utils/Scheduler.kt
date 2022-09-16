@@ -10,9 +10,8 @@ import org.joda.time.format.DateTimeFormat
 import org.openqa.selenium.chrome.ChromeDriver
 import webscrapper.Webscrapper
 import java.sql.Time
+import java.util.*
 import kotlin.concurrent.schedule
-import java.util.Timer
-import java.util.TimerTask
 import kotlin.math.abs
 
 class Scheduler(private val email: String, private val password: String) {
@@ -23,12 +22,17 @@ class Scheduler(private val email: String, private val password: String) {
 
     fun start(loginTime: String): privateTimer {
         val currentTime = DateTime.now().toInstant().millis
-        val parsedLogin =
+        var parsedLogin =
             (DateTimeFormat.forPattern("HH:mm:ss").parseLocalTime(loginTime)).toDateTimeToday().toInstant().millis
-        val interval = abs(parsedLogin - currentTime) / 1000L
+
+        if (currentTime > parsedLogin) {
+            parsedLogin += 86_400_000L
+        }
+
+        val interval = abs(parsedLogin - currentTime) / 1_000L
 
         val timer: TimerTask = Timer("Scheduled Login")
-            .schedule(delay = interval * 1000) {
+            .schedule(delay = interval * 1_000L) {
                 webscrapper.start()
             }
 

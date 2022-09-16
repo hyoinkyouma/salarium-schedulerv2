@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.res.useResource
@@ -151,7 +152,7 @@ class Main {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(50.dp)
                     ) {
-                        Row {
+                        Row(Modifier.shadow(20.dp)) {
                             Row(
                                 Modifier
                                     .height(80.dp)
@@ -183,6 +184,7 @@ class Main {
                                 if (intervalTime != 0L) {
                                     Row {
                                         Text(
+                                            modifier = Modifier.shadow(20.dp),
                                             text = "Logging In: ${getIntervalTime(intervalTime)}",
                                             color = Color.White,
                                             fontSize = 30.sp
@@ -191,6 +193,7 @@ class Main {
                                 } else {
                                     Row {
                                         Text(
+                                            modifier = Modifier.shadow(20.dp),
                                             fontSize = 30.sp,
                                             color = Color.White,
                                             text = "Enter Login Time"
@@ -243,22 +246,22 @@ class Main {
                                                 enabled = !isLoading && intervalTime == 0L,
                                                 label = { Text("Password") },
                                                 singleLine = true,
-                                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                                visualTransformation = if (passwordVisible && !isLoading && intervalTime == 0L) VisualTransformation.None else PasswordVisualTransformation(),
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                                 trailingIcon = {
                                                     val image = if (passwordVisible) Icons.Filled.Info
                                                     else Icons.Outlined.Info
-
-
-                                                    // Please provide localized description for accessibility services
                                                     val description =
                                                         if (passwordVisible) "Hide password" else "Show password"
 
-                                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                                    IconButton(
+                                                        onClick = { passwordVisible = !passwordVisible },
+                                                        enabled = !isLoading && intervalTime == 0L
+                                                    ) {
                                                         Icon(
                                                             imageVector = image,
                                                             contentDescription = description,
-                                                            tint = Color.White
+                                                            tint = if (!isLoading && intervalTime == 0L) Color.White else Color.Gray
                                                         )
                                                     }
 
@@ -340,16 +343,6 @@ class Main {
                                             status = ""
                                             isLoading = true
                                             mainCoroutine.launch {
-                                                val datimeCompare =
-                                                    DateTimeFormat.forPattern("HH:mm:ss").parseLocalTime(loginTime)
-                                                        .toDateTimeToday().toInstant().millis
-                                                if (datimeCompare <= DateTime.now().toInstant().millis) {
-                                                    statusColor = Color.Red
-                                                    status = Statuses.incorrectDate
-                                                    delay(2000L)
-                                                    isLoading = false
-                                                    return@launch
-                                                }
                                                 try {
                                                     if (!Webscrapper(email, password).login()) {
                                                         status = Statuses.incorrectCreds
@@ -406,7 +399,6 @@ class Main {
             }
         }
 
-        // TODO: 9/16/22 need to make config saving class
         @JvmStatic
         fun main(args: Array<String>) = application {
 
