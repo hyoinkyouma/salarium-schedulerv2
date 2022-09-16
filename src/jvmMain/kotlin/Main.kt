@@ -1,17 +1,24 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-import androidx.compose.desktop.ui.tooling.preview.Preview
+package tk.romanaugsto.salariumauto
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+
+import androidx.compose.ui.res.useResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.*
 import com.google.common.io.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -20,9 +27,12 @@ import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.openqa.selenium.chrome.ChromeDriver
+import utils.Config
 
 import utils.Scheduler
 import webscrapper.Webscrapper
+import java.io.File
+import java.nio.charset.StandardCharsets
 
 
 class Main {
@@ -32,11 +42,12 @@ class Main {
         const val scheduling = "Scheduling tasks"
         const val cancelled = "Task was cancelled"
         const val loggingIn = "Logging in at -time-"
-        const val incorrectDate = "Incorrect time format must be 24 time format"
+        const val incorrectDate = "Time format must be 24 time format and must be at a later time"
         const val loggedIn = "Logged in at -time-"
     }
 
     companion object {
+        private val config = Config()
         private lateinit var driver: ChromeDriver
         private val mainCoroutine = CoroutineScope(Job())
         private fun getIntervalTime(interval: Long): String {
@@ -46,17 +57,78 @@ class Main {
             return "${hours}:${minutes}:${seconds}"
         }
 
-        @Preview
+        data class Settings(val driverLoc: String, var cachedEmail: String, var cachedPassword: String)
+
+        private lateinit var settings: Settings
+
+        private fun load() = config.load().let {
+            settings = it
+        }
+
+        @Composable
+        fun error(applicationScope: ApplicationScope) {
+            MaterialTheme {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row(
+                        Modifier
+                            .padding(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+
+                        ) {
+                            Text(
+                                "Error",
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+
+                            )
+                            Text(
+                                ">_<",
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                modifier = Modifier.padding(horizontal = 30.dp),
+                                text = "There are currently no compiled chrome binaries available for your platform",
+                                textAlign = TextAlign.Center,
+                            )
+                            Button(
+                                modifier = Modifier.padding(top = 20.dp),
+                                onClick = { applicationScope.exitApplication() }
+                            ) {
+                                Text("Ok :(")
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
         @Composable
         fun app() {
             val currentTime = DateTime.now().plusMinutes(2).toString("HH:mm:ss")
-            var email by remember { mutableStateOf("") }
-            var password by remember { mutableStateOf("") }
+            var email by remember { mutableStateOf(settings.cachedEmail) }
+            var password by remember { mutableStateOf(settings.cachedPassword) }
             var loginTime by remember { mutableStateOf(currentTime) }
             var intervalTime by remember { mutableStateOf(0L) }
             var isLoading by remember { mutableStateOf(false) }
             var status by remember { mutableStateOf("") }
             var statusColor by remember { mutableStateOf(Color.White) }
+
 
             MaterialTheme {
                 Row(
@@ -215,6 +287,26 @@ class Main {
                                     Button(
                                         enabled = !isLoading && intervalTime == 0L,
                                         onClick = {
+                                            if (email.isEmpty() || password.isEmpty()) {
+                                                status = "Credentials are empty."
+                                                statusColor = Color.Red
+                                                mainCoroutine.launch {
+                                                    delay(2000)
+                                                    status = ""
+                                                    return@launch
+                                                }
+                                                return@Button
+                                            }
+                                            if (!loginTime.matches(Regex("(?:[01]\\d|2[0123]):[012345]\\d:[012345]\\d"))) {
+                                                status = Statuses.incorrectDate
+                                                statusColor = Color.Red
+                                                mainCoroutine.launch {
+                                                    delay(2000)
+                                                    status = ""
+                                                    return@launch
+                                                }
+                                                return@Button
+                                            }
                                             statusColor = Color.White
                                             status = ""
                                             isLoading = true
@@ -244,6 +336,9 @@ class Main {
                                                     return@launch
                                                 }
                                                 status = Statuses.isLoadingService
+                                                settings.cachedEmail = email
+                                                settings.cachedPassword = password
+                                                config.save(settings)
                                                 val privateTimer = Scheduler(email, password).start(loginTime)
                                                 driver = privateTimer.driver
                                                 isLoading = false
@@ -258,9 +353,13 @@ class Main {
                                                         intervalTime -= System.currentTimeMillis() / 1000 - previous / 1000
                                                         previous = System.currentTimeMillis()
                                                     }
+
                                                     intervalTime = 0
                                                     privateTimer.timer.cancel()
-                                                    status = Statuses.loggedIn.replace("-time-", loginTime)
+                                                    if (status != Statuses.cancelled) {
+                                                        status = Statuses.loggedIn
+                                                            .replace("-time-", loginTime)
+                                                    }
                                                 }
                                                 status = Statuses.loggingIn.replace("-time-", loginTime)
                                             }
@@ -272,21 +371,81 @@ class Main {
                                     }
                                 }
                             }
-
-
                         }
                     }
-
                 }
             }
         }
 
+        // TODO: 9/16/22 need to make config saving class
         @JvmStatic
         fun main(args: Array<String>) = application {
-            println()
+
+            println("[APPLICATION]: Detect OS -> ${System.getProperty("os.name")}")
+            println("[APPLICATION]: Detect Architecture -> ${System.getProperty("os.arch")}")
+
+            val settingsFolderLocation =
+                System.getProperty("user.home") + File.separator + "Documents" + File.separator + "SalariumAutoLogin"
+            val settingsFile = settingsFolderLocation + File.separator + "settings.json"
+            val binaryfolder = settingsFolderLocation + File.separator + "binaries"
+            val binary = binaryfolder + File.separator + "chromewebdriver"
+
+            if (!File(settingsFolderLocation).exists()) {
+                File(settingsFolderLocation).mkdir()
+            }
+            if (!File(settingsFile).exists()) {
+                File(settingsFile).writeText(
+                    Resources.getResource("config/settings.json")
+                        .readText(StandardCharsets.UTF_8)
+                        .replace("-binaryLoc-", binary)
+                )
+            }
+            if (!File(binaryfolder).exists()) {
+                File(binaryfolder).mkdir()
+            }
+
+            if (!File(binary).exists()) {
+                val binaryStream = File(binary)
+                //Apple
+                if (System.getProperty("os.name").contains("MAC", true)) {
+                    println("[APPLICATION]: Install chromedriver")
+
+                    //M1 && M2
+                    if (System.getProperty("os.arch") == "aarch64") {
+                        useResource("driver/chromedriver") {
+                            it.copyTo(binaryStream.outputStream())
+                            binaryStream.setExecutable(true)
+                        }
+                    }
+                    //Intel
+                    else {
+                        useResource("driver/chromedriverintelmac") {
+                            it.copyTo(binaryStream.outputStream())
+                            binaryStream.setExecutable(true)
+                        }
+                    }
+                }
+                //Windows
+                else if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) {
+                    useResource("driver/chromedriver.exe") {
+                        it.copyTo(binaryStream.outputStream())
+                        binaryStream.setExecutable(true)
+                    }
+                } else {
+                    Dialog(
+                        onCloseRequest = ::exitApplication,
+                        title = "Error"
+                    ) {
+                        error(this@application)
+                    }
+                    return@application
+                }
+            }
+
+            this@Companion.load()
             System.setProperty(
                 "webdriver.chrome.driver",
-                "/opt/homebrew/Caskroom/chromedriver/105.0.5195.52/chromedriver"
+                settings.driverLoc
             )
             val title by remember { mutableStateOf("Salarium Scheduler V2") }
             Window(
