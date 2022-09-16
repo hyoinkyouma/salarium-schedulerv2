@@ -42,3 +42,5 @@ bin/
 .DS_Store
 
 .env
+
+src/jvmMain/kotlin/utils/ConnectionStrings.kt
