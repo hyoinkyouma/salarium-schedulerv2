@@ -24,7 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
-import androidx.compose.ui.zIndex
 import com.google.common.io.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -33,7 +32,6 @@ import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.openqa.selenium.chrome.ChromeDriver
 import utils.Config
-
 import utils.Scheduler
 import webscrapper.Webscrapper
 import java.io.File

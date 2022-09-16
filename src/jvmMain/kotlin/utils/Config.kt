@@ -1,12 +1,8 @@
 package utils
 
-import com.google.common.io.Resources
 import org.json.JSONObject
 import tk.romanaugsto.salariumauto.Main
 import java.io.File
-import java.nio.charset.StandardCharsets
-import java.nio.file.FileSystem
-import java.nio.file.Paths
 
 class Config {
     private val configLocation = System.getProperty("user.home") +
@@ -18,7 +14,7 @@ class Config {
             "settings.json"
 
     fun load(): Main.Companion.Settings {
-        val configJSON = JSONObject(File(configLocation).readText(Charsets.UTF_8).replace("\\","\\\\"))
+        val configJSON = JSONObject(File(configLocation).readText(Charsets.UTF_8).replace("\\", "\\\\"))
         return Main.Companion.Settings(
             cachedEmail = configJSON.optString("cachedEmail"),
             cachedPassword = configJSON.optString("cachedPassword"),

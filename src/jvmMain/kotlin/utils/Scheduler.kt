@@ -1,26 +1,19 @@
 package utils
 
-import com.google.common.primitives.UnsignedInts.toLong
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.openqa.selenium.chrome.ChromeDriver
 import webscrapper.Webscrapper
-import java.sql.Time
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.math.abs
 
-class Scheduler(private val email: String, private val password: String) {
-    private val coroutineScope = CoroutineScope(Job())
+class Scheduler(email: String, password: String) {
     private val webscrapper = Webscrapper(email, password)
 
-    data class privateTimer(val interval: Long, val timer: TimerTask, val driver: ChromeDriver)
+    data class PrivateTimer(val interval: Long, val timer: TimerTask, val driver: ChromeDriver)
 
-    fun start(loginTime: String): privateTimer {
+    fun start(loginTime: String): PrivateTimer {
         val currentTime = DateTime.now().toInstant().millis
         var parsedLogin =
             (DateTimeFormat.forPattern("HH:mm:ss").parseLocalTime(loginTime)).toDateTimeToday().toInstant().millis
@@ -36,7 +29,7 @@ class Scheduler(private val email: String, private val password: String) {
                 webscrapper.start()
             }
 
-        return privateTimer(interval = interval, timer = timer, driver = webscrapper.driver)
+        return PrivateTimer(interval = interval, timer = timer, driver = webscrapper.driver)
 
     }
 }
