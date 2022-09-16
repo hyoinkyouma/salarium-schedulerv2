@@ -1,5 +1,7 @@
+import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.author
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.js.inline.clean.removeDuplicateImports
 
 plugins {
     kotlin("multiplatform")
@@ -30,13 +32,21 @@ compose.desktop {
                 jvmArgs("-Dapple.awt.application.appearance=system")
 
             }
+            windows {
+                packageName = "Salarium Scheduler v2"
+                iconFile.set(project.file("src/jvmMain/resources/drawable/icon.ico"))
+                shortcut = true
+                menuGroup = "Salarium Scheduler"
+                menu = true
+            }
         }
     }
 }
 kotlin {
     jvm {
+
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.jvmTarget = "11"
         }
 
     }
@@ -50,16 +60,10 @@ kotlin {
                 implementation("org.json:json:20220320")
 
             }
-
-            resources.srcDirs("/src/jvmMain/resources/driver/chromedriver")
-            resources.filter {
-                it.exists()
-            }
         }
         val jvmTest by getting
     }
 }
-
 
 
 compose.desktop {

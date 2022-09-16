@@ -25,9 +25,6 @@ class Webscrapper(private val email: String, private val password: String) {
     private val options: ChromeOptions = ChromeOptions()
         .setLogLevel(ChromeDriverLogLevel.OFF)
         .setHeadless(true)
-        .also {
-            it.setPlatformName("darwin")
-        }
     
     val driver = ChromeDriver(options)
     private val loggingCoroutine = CoroutineScope(Job())

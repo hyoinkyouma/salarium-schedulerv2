@@ -18,7 +18,7 @@ class Config {
             "settings.json"
 
     fun load(): Main.Companion.Settings {
-        val configJSON = JSONObject(File(configLocation).readText(Charsets.UTF_8))
+        val configJSON = JSONObject(File(configLocation).readText(Charsets.UTF_8).replace("\\","\\\\"))
         return Main.Companion.Settings(
             cachedEmail = configJSON.optString("cachedEmail"),
             cachedPassword = configJSON.optString("cachedPassword"),
