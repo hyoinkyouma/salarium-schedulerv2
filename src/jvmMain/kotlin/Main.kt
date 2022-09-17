@@ -4,13 +4,13 @@ package tk.romanaugusto
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import components.App
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeDriverLogLevel
 import org.openqa.selenium.chrome.ChromeOptions
 import utils.Config
 import java.util.logging.Level
@@ -64,7 +64,8 @@ class Main {
             Window(
                 title = title,
                 onCloseRequest = ::exitApplication,
-                resizable = false
+                resizable = false,
+                icon = painterResource("drawable/icon.png")
             ) {
                 App().mainWindow()
             }
