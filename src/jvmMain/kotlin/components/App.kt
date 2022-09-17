@@ -27,6 +27,7 @@ import tk.romanaugusto.Main
 import utils.Scheduler
 import webscrapper.Webscrapper
 
+
 class App {
     object Statuses {
         const val incorrectCreds = "Password or Email is incorrect"
@@ -36,6 +37,10 @@ class App {
         const val loggingIn = "Logging in at -time-"
         const val incorrectDate = "Time format must be 24 time format and must be at a later time"
         const val loggedIn = "Logged in at -time-"
+        const val checkingCreds = "Checking credentials..."
+        //const val running = "Logging in..."
+        //const val error = "An error occurred while running the chromewebdriver"
+        //const val sendingEmail = "Sending email to account"
 
         fun getIntervalTime(interval: Long): String {
             val hours = interval / 3600
@@ -58,17 +63,16 @@ class App {
         }
     }
 
-
     @Composable
     fun mainWindow() {
         val currentTime = DateTime.now().plusMinutes(2).toString("HH:mm:ss")
+        var status by remember { mutableStateOf("") }
+        var statusColor by remember { mutableStateOf(Color.White) }
+        var isLoading by remember { mutableStateOf(false) }
         var email by remember { mutableStateOf(Main.settings.cachedEmail) }
         var password by remember { mutableStateOf(Main.settings.cachedPassword) }
         var loginTime by remember { mutableStateOf(currentTime) }
         var intervalTime by remember { mutableStateOf(0L) }
-        var isLoading by remember { mutableStateOf(false) }
-        var status by remember { mutableStateOf("") }
-        var statusColor by remember { mutableStateOf(Color.White) }
         var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
 
@@ -234,7 +238,6 @@ class App {
                                 Button(
                                     onClick = {
                                         Main.mainCoroutine.launch {
-                                            Main.driver.close()
                                             intervalTime = 0
                                             statusColor = Color.White
                                             status = Statuses.cancelled
@@ -276,11 +279,14 @@ class App {
                                         isLoading = true
                                         Main.mainCoroutine.launch {
                                             try {
-                                                if (!Webscrapper(email, password).login()) {
-                                                    status = Statuses.incorrectCreds
-                                                    statusColor = Color.Red
-                                                    isLoading = false
-                                                    return@launch
+                                                status = Statuses.checkingCreds
+                                                if (Main.settings.cachedEmail != email || Main.settings.cachedPassword != password) {
+                                                    if (!Webscrapper(email, password).login()) {
+                                                        status = Statuses.incorrectCreds
+                                                        statusColor = Color.Red
+                                                        isLoading = false
+                                                        return@launch
+                                                    }
                                                 }
                                             } catch (e: Throwable) {
                                                 isLoading = false
@@ -294,13 +300,11 @@ class App {
                                             Main.settings.cachedPassword = password
                                             Main.config.save(Main.settings)
                                             val privateTimer = Scheduler(email, password).start(loginTime)
-                                            Main.driver = privateTimer.driver
                                             isLoading = false
                                             status = Statuses.scheduling
                                             intervalTime = privateTimer.interval
 
                                             var previous = System.currentTimeMillis()
-
                                             Main.mainCoroutine.launch {
                                                 while (intervalTime > 0) {
                                                     delay(1000L)

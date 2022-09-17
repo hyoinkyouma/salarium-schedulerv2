@@ -20,14 +20,17 @@ class Config {
             File.separator +
             "settings.json"
 
-    fun load(): Main.Companion.Settings {
-        val configJSON = JSONObject(File(configLocation).readText(Charsets.UTF_8).replace("\\", "\\\\"))
-        return Main.Companion.Settings(
-            cachedEmail = configJSON.optString("cachedEmail"),
-            cachedPassword = configJSON.optString("cachedPassword"),
-            driverLoc = configJSON.optString("driverLoc")
+    fun load() = JSONObject(
+        File(configLocation).readText(Charsets.UTF_8)
+            .replace("\\", "\\\\")
+    ).let {
+        Main.Companion.Settings(
+            cachedEmail = it.optString("cachedEmail"),
+            cachedPassword = it.optString("cachedPassword"),
+            driverLoc = it.optString("driverLoc")
         )
     }
+
 
     @Composable
     fun startupConfig(applicationScope: ApplicationScope) {

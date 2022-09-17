@@ -63,8 +63,8 @@ kotlin {
                 implementation("org.json:json:20220320")
                 implementation("net.axay:simplekotlinmail-core:1.4.0")
                 implementation("net.axay:simplekotlinmail-client:1.4.0")
-
-
+                implementation("org.slf4j:slf4j-api:1.7.5")
+                implementation("org.slf4j:slf4j-simple:1.6.4")
             }
         }
         val jvmTest by getting
