@@ -22,7 +22,7 @@ class Main {
 
         //chrome driver initialize
         private val options: ChromeOptions = ChromeOptions()
-            .setHeadless(true)
+            .setHeadless(false)
 
         lateinit var driver: ChromeDriver
 
@@ -55,7 +55,7 @@ class Main {
             java.util.logging.Logger
                 .getLogger("org.openqa.selenium")
                 .level = Level.OFF
-            
+
             driver = ChromeDriver(options)
 
 

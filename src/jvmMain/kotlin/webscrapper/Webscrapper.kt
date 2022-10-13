@@ -2,6 +2,7 @@ package webscrapper
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
@@ -26,13 +27,15 @@ class Webscrapper(private val email: String, private val password: String) {
             try {
                 login()
                 timeIn()
-                Main.driver.close()
+                delay(2_000L)
+                Main.driver.get("https://app.salarium.com/users/logout")
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
         }
         return Main.driver
     }
+
 
     fun login(): Boolean {
         Main.driver.get("https://app.salarium.com/users/login")
