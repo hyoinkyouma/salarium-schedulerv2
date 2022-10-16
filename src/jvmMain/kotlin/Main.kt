@@ -22,7 +22,7 @@ class Main {
 
         //chrome driver initialize
         private val options: ChromeOptions = ChromeOptions()
-            .setHeadless(false)
+            .setHeadless(true)
 
         lateinit var driver: ChromeDriver
 
