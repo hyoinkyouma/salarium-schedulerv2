@@ -9,39 +9,53 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
 import tk.romanaugusto.Main
+import tk.romanaugusto.Main.Companion.driver
+import utils.Emailer
 import java.time.Duration
 
 
 class Webscrapper(private val email: String, private val password: String) {
     private val loggingCoroutine = CoroutineScope(Job())
-    private val wait = WebDriverWait(Main.driver, Duration.ofSeconds(4))
+    private val wait = WebDriverWait(driver, Duration.ofSeconds(4))
 
 
     fun start(): ChromeDriver {
 
         loggingCoroutine.launch {
-            Main.driver
+            driver
                 .manage()
                 .timeouts()
                 .implicitlyWait(Duration.ofSeconds(2))
-            try {
-                login()
-                timeIn()
-                delay(2_000L)
-                Main.driver.get("https://app.salarium.com/users/logout")
-            } catch (e: Throwable) {
-                e.printStackTrace()
+            var isSuccess = false
+            var retryCount = 0
+            while (!isSuccess && retryCount <= 10) {
+                isSuccess = try {
+                    login()
+                    timeIn()
+                    delay(2_000L)
+                    driver.get("https://app.salarium.com/users/logout")
+                    true
+                } catch (e: Throwable) {
+                    if (retryCount == 10) {
+                        Emailer(email).sendFailed()
+                    }
+                    e.printStackTrace()
+                    retryCount++
+                    false
+                }
             }
+
+
         }
-        return Main.driver
+        return driver
     }
 
 
     fun login(): Boolean {
-        Main.driver.get("https://app.salarium.com/users/login")
-        val currentUrl = Main.driver.currentUrl
-        val loginBtn = Main.driver.findElement(By.className("btn-form-custom"))
-        val inputEmail = Main.driver.findElements(By.className("form-control"))
+        driver.get("https://app.salarium.com/users/login")
+        val currentUrl = driver.currentUrl
+        val loginBtn = driver.findElement(By.className("btn-form-custom"))
+        val inputEmail = driver.findElements(By.className("form-control"))
         inputEmail[0].apply {
             this.sendKeys(email)
         }
@@ -52,11 +66,11 @@ class Webscrapper(private val email: String, private val password: String) {
             wait.until(ExpectedConditions.attributeToBe(inputEmail[1], "value", password))
             loginBtn.click()
             wait.until(ExpectedConditions.urlToBe("https://app.salarium.com/employees/page/dashboard"))
-            currentUrl != Main.driver.currentUrl
+            currentUrl != driver.currentUrl
         } catch (e: Throwable) {
             false
         }
     }
 
-    private fun timeIn() = Main.driver.findElement(By.ById("time_btn")).click()
+    private fun timeIn() = driver.findElement(By.ById("time_btn")).click()
 }

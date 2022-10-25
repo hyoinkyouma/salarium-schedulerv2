@@ -31,6 +31,26 @@ class Emailer(private val email: String) {
 
     }
 
+    fun sendFailed() = getAuth().let {
+        val emailBody = emailBuilder {
+            from("Salarium Auto Login", "SalariumAutoLogin@roman.tk")
+            to(email)
+            withSubject("Failed to Login at ${DateTime.now().toString("hh:mm:ss dd/MM/yyyy")}")
+            withPlainText("Something went wrong at ${DateTime.now()}")
+        }
+        val mailer = mailerBuilder(
+            host = "smtp.gmail.com",
+            port = 587,
+            username = it.getString("username") ?: "",
+            password = it.getString("password") ?: ""
+        )
+
+        emailScope.launch {
+            mailer.sendMail(emailBody)
+            mailer.shutdownConnectionPool()
+        }
+    }
+
     private fun getAuth() =
         JSONObject(mapOf("username" to "salariumautologin@gmail.com", "password" to "uermnojknzxqpwid"))
 
