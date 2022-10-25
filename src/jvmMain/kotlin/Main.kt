@@ -22,7 +22,7 @@ class Main {
 
         //chrome driver initialize
         private val options: ChromeOptions = ChromeOptions()
-            .setHeadless(false)
+            .setHeadless(true)
 
         lateinit var driver: ChromeDriver
 
@@ -63,7 +63,10 @@ class Main {
             val title by remember { mutableStateOf("Salarium Scheduler V2") }
             Window(
                 title = title,
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {
+                    Main.driver.close()
+                    exitApplication()
+                },
                 resizable = false,
                 icon = painterResource("drawable/icon.png")
             ) {
