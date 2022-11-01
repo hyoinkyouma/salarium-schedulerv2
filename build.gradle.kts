@@ -23,12 +23,12 @@ compose.desktop {
     application {
         nativeDistributions {
             packageName = "Salarium Scheduler V2"
-            version = "1.1.0"
+            version = "1.2.0"
             description = "Application to automatically log into salarium"
-            copyright = "© 2020 Roman Augusto. All rights reserved."
+            copyright = "© 2022 Roman Augusto. All rights reserved."
             macOS {
                 packageName = "Salarium Scheduler V2"
-                version = "1.1.0"
+                version = "1.2.0"
                 description = "Application to automatically log into salarium"
                 copyright = "© 2022 Roman Augusto. All rights reserved."
                 iconFile.set(project.file("src/jvmMain/resources/drawable/icon.icns"))
@@ -81,7 +81,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Salarium Scheduler V2"
-            packageVersion = "1.1.0"
+            packageVersion = "1.2.0"
         }
     }
 }
