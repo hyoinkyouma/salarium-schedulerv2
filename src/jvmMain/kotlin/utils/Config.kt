@@ -22,12 +22,12 @@ class Config {
 
     fun load() = JSONObject(
         File(configLocation).readText(Charsets.UTF_8)
-            .replace("\\", "\\\\")
     ).let {
         Main.Companion.Settings(
             cachedEmail = it.optString("cachedEmail"),
             cachedPassword = it.optString("cachedPassword"),
             driverLoc = it.optString("driverLoc")
+
         )
     }
 
@@ -50,7 +50,7 @@ class Config {
             File(settingsFile).writeText(
                 Resources.getResource("config/settings.json")
                     .readText(StandardCharsets.UTF_8)
-                    .replace("-binaryLoc-", binary)
+                    .replace("-binaryLoc-", binary.replace("\\", "\\\\"))
             )
         }
         if (!File(binaryfolder).exists()) {
