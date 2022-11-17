@@ -10,8 +10,6 @@ import androidx.compose.ui.window.application
 import components.App
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeOptions
 import utils.Config
 import java.util.logging.Level
 
@@ -19,12 +17,6 @@ class Main {
     companion object {
         //load config class
         val config = Config()
-
-        //chrome driver initialize
-        private val options: ChromeOptions = ChromeOptions()
-            .setHeadless(true)
-
-        lateinit var driver: ChromeDriver
 
         //main coroutine scope
         val mainCoroutine = CoroutineScope(Job())
@@ -34,37 +26,27 @@ class Main {
 
         lateinit var settings: Settings
 
-        private fun load() = config.load().let {
-            settings = it
-        }
-
         @JvmStatic
         fun main(args: Array<String>) = application {
             //creates configs if not found
             config.startupConfig(this)
 
+
             //loads configs
-            this@Companion.load()
+            settings = config.load()
 
             //set chrome driver to where it was copied earlier
             System.setProperty(
                 "webdriver.chrome.driver",
                 settings.driverLoc
             )
-            System.setProperty("webdriver.chrome.silentOutput", "true")
-            java.util.logging.Logger
-                .getLogger("org.openqa.selenium")
-                .level = Level.OFF
-
-            driver = ChromeDriver(options)
-
 
             //creates main window
             val title by remember { mutableStateOf("Salarium Scheduler V2") }
+
             Window(
                 title = title,
                 onCloseRequest = {
-                    Main.driver.close()
                     exitApplication()
                 },
                 resizable = false,

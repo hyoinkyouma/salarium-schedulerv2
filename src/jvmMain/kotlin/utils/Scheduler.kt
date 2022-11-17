@@ -14,7 +14,7 @@ class Scheduler(email: String, password: String) {
     private val emailSender = Emailer(email)
 
 
-    data class PrivateTimer(val interval: Long, val timer: TimerTask, val driver: ChromeDriver)
+    data class PrivateTimer(val interval: Long, val timer: TimerTask)
 
     fun start(loginTime: String): PrivateTimer {
         val currentTime = DateTime.now().toInstant().millis
@@ -38,7 +38,7 @@ class Scheduler(email: String, password: String) {
                 }
             }
 
-        return PrivateTimer(interval = interval, timer = timer, driver = Main.driver)
+        return PrivateTimer(interval = interval, timer = timer)
 
     }
 }
